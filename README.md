@@ -1,13 +1,15 @@
 # ArduCam 16MP IMX519 Autofocus Camera on Mainsail
 
+<b style="color: red; font-size: large;">This is NOT A GUIDE to get ArduCam working on Mainsail. Solutions used in this writeup employs pre-release software, potentially breaking changes to system configuration files, and modified libcamera binaries from ArduCam. Use these solutions at your own discretion. </b>
+
 ## Overview
 
 The [ArduCam 16MP IMX519 Autofocus Camera](https://www.arducam.com/16mp-autofocus-camera-for-raspberry-pi/) is a great camera for Raspberry Pi projects. It has the same dimensions as the official Raspberry Pi cameras while being very affordable, includes autofocus, and is capable of smooth 1080p30 video streaming. 
 
-This makes it perfect for 3D printer applications. A Raspberry Pi or similar SBC is just capable enough to encode 1080p streams, while the small size makes it a perfect choice for mounting close to the bed/nozzle without obstructing the toolhead or bed. 
+This makes it perfect for 3D printer applications. A Raspberry Pi or similar SBC is just capable enough to encode 1080p streams, while the small size makes it a perfect choice for mounting close to the bed/nozzle. 
 
 ## Issues
-However, the ArduCam 16MP camera is not plug-and-play. You will need to choose between either using ArduCam binaries that aren't open-sourced yet, or making a small patch and live without continuous autofocus or phase detection autofocus.
+The ArduCam 16MP camera is not plug-and-play. You will need to choose between either using ArduCam binaries that aren't open-sourced yet (potential security issues), or making a small patch and live without continuous autofocus or phase detection autofocus.
 
 ### Option 1: ArduCam Binary Drivers
 If you trust ArduCam with their binaries and want to avoid troubleshooting hassles, you could follow their [guide](https://docs.arducam.com/Raspberry-Pi-Camera/Native-camera/Quick-Start-Guide/#imx519-cameras) to use their pivariety drivers and apps. However, they do have [plans](https://forum.arducam.com/t/install-pivariety-pkgs-sh-update-and-faq/3060/43?u=mgrl) to push their changes to mainline `libcamera`. 
@@ -28,7 +30,9 @@ dtoverlay=imx519
 ### Option 2: Native Drivers
 If you don't feel comfortable with the ArduCam drivers, You will need a kernel that supports the IMX519 sensor and the AK7375 motor that drives the autofocus system. Fortunately, the `6.1` kernels already includes both drivers. However, if you run `libcamera-hello` with the `6.1` kernel, you will still encounter an error about no autofocus algorithm. You will need to make a patch to add a simple contrast autofocus algorithm to the configuration json file for IMX519. This workaround was proposed in this [forum post](https://forums.raspberrypi.com/viewtopic.php?t=346667).
 
-This repository provides an easy way to do it:
+This workaround modifies system configuration for the IMX519 sensor and could break things down the line. Use this solution at your own discretion. 
+
+This repository provides an easy way to do it that also stores the original file at `/usr/share/libcamera/ipa/raspberrypi/imx519.json.orig`:
 ```sh
 sh patch.sh
 ```
@@ -86,11 +90,13 @@ Just like with using the ArduCam drivers, you will need to add the following lin
 dtoverlay=imx519
 ```
 
-The native driver does not handle autofocus well. The camera would only autofocus is at the beginning, and autofocus will not work after it first acquires focus. This should pose little issue to a 3D printing application, as your subjects usually don't move that much.
+The native driver does not handle autofocus well. The camera would only do contrast detection autofocus (slow) at the beginning, and autofocus will not work after it first acquires focus. This should pose little issue to a 3D printing application, as your subjects usually don't move that much.
+
+If you need faster autofocus speeds (phase detection autofocus) or continuous autofocus, you will need to use the ArduCam libcamera binaries. 
 
 ## Crowsnest
 
-Another issue you will face is with Crowsnest with ustreamer not currently supporting libcamera cameras (including many ArduCam cameras and the Pi Camera 3). However, the developers of Crowsnest is working on adding support for the camera through `camera-streamer` in the `develop` branch. You can switch to this branch with `git checkout --track origin/develop`. If you want to have moonraker automatically update, you will also need to change the `moonraker.conf`:
+Another issue you will face is with crowsnest with ustreamer not currently supporting libcamera cameras (including many ArduCam cameras and the Pi Camera 3). However, the developers of crowsnest is working on adding support for the camera through `camera-streamer` in the `develop` branch. You can switch to this branch with `git checkout --track origin/develop`. If you want to have moonraker automatically update crowsnest (**NOT RECOMMENDED**), you will also need to change the `moonraker.conf`:
 
 ```
 [update_manager crowsnest]
