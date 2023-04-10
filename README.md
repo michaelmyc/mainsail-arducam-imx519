@@ -1,6 +1,6 @@
 # ArduCam 16MP IMX519 Autofocus Camera on Mainsail
 
-<b style="color: red; font-size: large;">This is NOT A GUIDE to get ArduCam working on Mainsail. Solutions used in this writeup employs pre-release software, potentially breaking changes to system configuration files, and modified libcamera binaries from ArduCam. Use these solutions at your own discretion. </b>
+> :warning: This is NOT A GUIDE to get ArduCam working on Mainsail. Solutions used in this writeup employs pre-release software, potentially breaking changes to system configuration files, and modified libcamera binaries from ArduCam. There's a high chance something may break in the future. Use these solutions at your own discretion.
 
 ## Overview
 
